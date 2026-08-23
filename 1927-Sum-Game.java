@@ -8,31 +8,34 @@ class Solution {
         int qRight = 0;
 
         for (int i = 0; i < half; i++) {
-            if (num.charAt(i) == '?') {
+            char c = num.charAt(i);
+
+            if (c == '?') {
                 qLeft++;
             } else {
-                diff += num.charAt(i) - '0';
+                diff += c - '0';
             }
         }
 
         for (int i = half; i < n; i++) {
-            if (num.charAt(i) == '?') {
+            char c = num.charAt(i);
+
+            if (c == '?') {
                 qRight++;
             } else {
-                diff -= num.charAt(i) - '0';
+                diff -= c - '0';
             }
         }
 
         int qDiff = qLeft - qRight;
 
-        // If the number of '?' differs, Bob can win only when
-        // the existing sum difference is exactly compensable.
-        if (qDiff != 0) {
-            return diff != -9 * qDiff / 2;
+        // An odd difference in the number of '?' means
+        // Alice can always force the sums to be different.
+        if (qDiff % 2 != 0) {
+            return true;
         }
 
-        // Same number of '?' on both sides:
-        // Alice wins if the current sums are already different.
-        return diff != 0;
+        // Bob can force equality only in this exact situation.
+        return diff != -9 * qDiff / 2;
     }
 }
