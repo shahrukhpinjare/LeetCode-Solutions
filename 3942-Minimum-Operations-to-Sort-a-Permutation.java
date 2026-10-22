@@ -1,43 +1,35 @@
 class Solution {
     public int minOperations(int[] nums) {
         int n = nums.length;
-        if (n <= 1) {
+
+        int asc_count = 0;
+        int dsc_count = 0;
+
+        for(int i = 1; i < n; i++) {
+            asc_count += (nums[i] == (nums[i-1]+1)%n) ? 1 : 0;
+            dsc_count += (nums[i-1] == (nums[i]+1)%n) ? 1 : 0;
+        }
+
+        if(asc_count == n-1 && nums[0] == 0) { //0, 1, 2, .... n-1
             return 0;
         }
 
-        int best = Integer.MAX_VALUE;
-
-        // Try every left rotation without reversing
-        for (int shift = 0; shift < n; shift++) {
-            if (isSortedAfterLeftRotation(nums, shift)) {
-                best = Math.min(best, Math.min(shift, n - shift));
-            }
+        if(asc_count == n-1) {
+            int leftRot  = n - nums[0];
+            int rightRot = 1 + (nums[n-1] + 1) + 1;
+            return Math.min(leftRot, rightRot);
         }
 
-        // Try reversing, then every left rotation
-        int[] reversed = new int[n];
-        for (int i = 0; i < n; i++) {
-            reversed[i] = nums[n - 1 - i];
+        if(dsc_count == n-1) {
+            //Mandatory 1 Reverse
+            int leftRot = n - nums[n-1] + 1;
+
+            //x Left Rot + 1 Reverse
+            int rightRot = (nums[0]+1)%n + 1;
+
+            return Math.min(leftRot, rightRot);
         }
 
-        for (int shift = 0; shift < n; shift++) {
-            if (isSortedAfterLeftRotation(reversed, shift)) {
-                best = Math.min(best, 1 + Math.min(shift, n - shift));
-            }
-        }
-
-        return best == Integer.MAX_VALUE ? -1 : best;
-    }
-
-    private boolean isSortedAfterLeftRotation(int[] nums, int shift) {
-        int n = nums.length;
-
-        for (int i = 0; i < n; i++) {
-            if (nums[(shift + i) % n] != i) {
-                return false;
-            }
-        }
-
-        return true;
+        return -1;
     }
 }
