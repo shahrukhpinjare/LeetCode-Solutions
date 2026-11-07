@@ -11,8 +11,8 @@ class Solution {
         PriorityQueue<int[]> free = new PriorityQueue<>(
             (a, b) -> {
                 if (a[0] != b[0])
-                    return a[0] - b[0];
-                return a[1] - b[1];
+                    return Integer.compare(a[0], b[0]);
+                return Integer.compare(a[1], b[1]);
             }
         );
 
@@ -27,36 +27,37 @@ class Solution {
             }
         );
 
-        // Initially all servers are free
         for (int i = 0; i < n; i++) {
             free.offer(new int[]{servers[i], i});
         }
 
         int[] ans = new int[m];
 
+        // Actual current processing time
+        long time = 0;
+
         for (int j = 0; j < m; j++) {
 
-            // Release all servers that are free at time j
-            while (!busy.isEmpty() && busy.peek()[0] <= j) {
-                int[] server = busy.poll();
+            time = Math.max(time, j);
 
-                free.offer(new int[]{server[1], server[2]});
+            // Release servers that have completed their tasks
+            while (!busy.isEmpty() && busy.peek()[0] <= time) {
+                int[] s = busy.poll();
+                free.offer(new int[]{s[1], s[2]});
             }
 
-            // If no server is free, jump to the earliest free time
+            // If no server is free, move time forward
             if (free.isEmpty()) {
 
-                int time = busy.peek()[0];
+                time = busy.peek()[0];
 
-                // Release all servers available at this time
                 while (!busy.isEmpty() && busy.peek()[0] <= time) {
-                    int[] server = busy.poll();
-
-                    free.offer(new int[]{server[1], server[2]});
+                    int[] s = busy.poll();
+                    free.offer(new int[]{s[1], s[2]});
                 }
             }
 
-            // Assign the task to the best available server
+            // Select server with minimum weight, then index
             int[] server = free.poll();
 
             int weight = server[0];
@@ -64,9 +65,9 @@ class Solution {
 
             ans[j] = index;
 
-            // Add server to busy queue
+            // Completion time = actual assignment time + task duration
             busy.offer(new int[]{
-                j + tasks[j],
+                (int)(time + tasks[j]),
                 weight,
                 index
             });
