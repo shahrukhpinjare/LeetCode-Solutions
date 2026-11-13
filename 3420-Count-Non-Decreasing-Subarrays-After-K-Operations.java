@@ -2,68 +2,53 @@ class Solution {
     public long countNonDecreasingSubarrays(int[] nums, int k) {
         int n = nums.length;
 
-        long[] prefix = new long[n + 1];
-
-        for (int i = 0; i < n; i++) {
-            prefix[i + 1] = prefix[i] + nums[i];
-        }
-
         int[] stack = new int[n];
         int top = -1;
 
-        int[] nextGreater = new int[n];
+        long[] tree = new long[4 * n];
+        long[] lazy = new long[4 * n];
 
-        for (int i = n - 1; i >= 0; i--) {
-            while (top >= 0 && nums[stack[top]] <= nums[i]) {
+        long ans = 0;
+        int left = 0;
+
+        for (int right = 0; right < n; right++) {
+
+            // Maintain the non-increasing stack
+            while (top >= 0 && nums[stack[top]] <= nums[right]) {
                 top--;
             }
 
-            nextGreater[i] = top == -1 ? n : stack[top];
-            stack[++top] = i;
-        }
+            stack[++top] = right;
 
-        long ans = 0;
+            // Calculate valid window using binary search
+            int low = left, high = right;
 
-        // Sliding window with binary search
-        for (int r = 0; r < n; r++) {
-            int low = 0, high = r;
-
-            while (low < high) {
+            while (low <= high) {
                 int mid = low + (high - low) / 2;
 
-                if (getCost(nums, prefix, nextGreater, mid, r) <= k) {
-                    high = mid;
+                if (cost(nums, mid, right) <= k) {
+                    high = mid - 1;
                 } else {
                     low = mid + 1;
                 }
             }
 
-            ans += r - low + 1;
+            left = low;
+            ans += right - left + 1;
         }
 
         return ans;
     }
 
-    private long getCost(
-        int[] nums,
-        long[] prefix,
-        int[] nextGreater,
-        int l,
-        int r
-    ) {
-        long cost = 0;
-        int i = l;
+    private long cost(int[] nums, int l, int r) {
+        long operations = 0;
+        int max = nums[l];
 
-        while (i <= r) {
-            int j = Math.min(r, nextGreater[i] - 1);
-
-            long sum = prefix[j + 1] - prefix[i];
-
-            cost += (long) nums[i] * (j - i + 1) - sum;
-
-            i = j + 1;
+        for (int i = l + 1; i <= r; i++) {
+            max = Math.max(max, nums[i]);
+            operations += max - nums[i];
         }
 
-        return cost;
+        return operations;
     }
 }
